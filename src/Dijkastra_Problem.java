@@ -2,12 +2,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-public class Djikastra_Problem {
+public class Dijkastra_Problem {
     public static List<Node> graph = new ArrayList<>();
     public static List<Way> V = new ArrayList<>();
     public static List<Integer> visited = new ArrayList<>();
     public static int nbCites;
     public static int villeDep;
+    public  static int Vmin;
 
     public static void fillGraph(){
         boolean rep;
@@ -32,42 +33,45 @@ public class Djikastra_Problem {
         }
     }
 
-
-    public static void Djikastra(){
-
-        int Vmin;
-
+    public static void initializeV(){
         for (int i = 0;i<nbCites;i++){
             Way w = new Way();
             w.setValue(Integer.MAX_VALUE);
             V.add(w);
         }
         V.get(villeDep-1).setValue(0);
+    }
 
+    public static Node searchMinValue(){
+        Node x = new Node();
+
+        for (int i=0;i<nbCites;i++){
+            if ( (! visited.contains(graph.get(i).getNumberOfNode())) && (V.get(i).getValue() < Vmin) ){
+                x.setNumberOfNode(graph.get(i).getNumberOfNode());
+                for (int j=0;j<graph.get(i).getNextNode().size();j++){
+                    NextTo nt = new NextTo();
+                    nt.setValue(graph.get(i).getNextNode().get(j).getValue());
+                    nt.setNumberOfCity(graph.get(i).getNextNode().get(j).getNumberOfCity());
+                    x.getNextNode().add(nt);
+                }
+                Vmin = V.get(i).getValue();
+            }
+        }
+        return x;
+    }
+
+
+    public static void Dijkastra(){
+        initializeV();
         do {
             Vmin=Integer.MAX_VALUE;
             Node x = new Node();
-
-            for (int i=0;i<nbCites;i++){
-                if ( (! visited.contains(graph.get(i).getNumberOfNode())) && (V.get(i).getValue() < Vmin) ){
-                    x.setNumberOfNode(graph.get(i).getNumberOfNode());
-                    for (int j=0;j<graph.get(i).getNextNode().size();j++){
-                        NextTo nt = new NextTo();
-                        nt.setValue(graph.get(i).getNextNode().get(j).getValue());
-                        nt.setNumberOfCity(graph.get(i).getNextNode().get(j).getNumberOfCity());
-                        x.getNextNode().add(nt);
-                    }
-                    Vmin = V.get(i).getValue();
-                }
-            }
-
-
+            x = searchMinValue();
 
             if (Vmin < Integer.MAX_VALUE){
                 visited.add(x.getNumberOfNode());
                 for (int j=0;j<x.getNextNode().size();j++){
                     if ( (! visited.contains(x.getNextNode().get(j).getNumberOfCity()) ) && ((V.get(x.getNumberOfNode()-1).getValue() + x.getNextNode().get(j).getValue()) < V.get(x.getNextNode().get(j).getNumberOfCity()-1).getValue() ) ){
-                        System.out.println("one ");
                         V.get(x.getNextNode().get(j).getNumberOfCity()-1).setValue(V.get(x.getNumberOfNode()-1).getValue() + x.getNextNode().get(j).getValue());
                         V.get(x.getNextNode().get(j).getNumberOfCity()-1).getMinWay().clear();
                         for (int k = 0;k<V.get(x.getNumberOfNode()-1).getMinWay().size();k++){
@@ -77,13 +81,10 @@ public class Djikastra_Problem {
                     }
                 }
             }
-            System.out.println(Vmin);
-
-
         }while (Vmin != Integer.MAX_VALUE);
-
-
     }
+
+
 
     public static void showMinWay(int k){
         for (int i=0;i<V.get(k-1).getMinWay().size();i++){
@@ -113,7 +114,7 @@ public class Djikastra_Problem {
         show();
         System.out.println("donner la ville de depart");
         villeDep = s.nextInt();
-        Djikastra();
+        Dijkastra();
         System.out.println("donner la ville finale");
         k = s.nextInt();
         showMinWay(k);
